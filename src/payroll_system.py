@@ -563,12 +563,7 @@ class PayrollService:
                 continue
             annual_tax += (in_bracket * rate).quantize(PRECISION, rounding=ROUND_HALF_UP)
 
-        # Convert annual estimate to per-period (approximate)
-        # We use annualized method: period_tax = annual_tax / periods_per_year
-        # For accuracy, use the actual bracket on annualized income
-        from decimal import Decimal
-        federal_period = Decimal("0")
-        periods = 26  # biweekly default; caller should use actual
+        # Convert annual estimate to per-period using annualized method
         federal_period = (annual_tax / Decimal("26")).quantize(PRECISION, rounding=ROUND_HALF_UP)
 
         # Social Security
@@ -578,8 +573,7 @@ class PayrollService:
 
         # Medicare
         medicare_tax = (gross * MEDICARE_RATE).quantize(PRECISION, rounding=ROUND_HALF_UP)
-        from decimal import Decimal as D
-        ytd_with_this = ytd_ss + gross  # approximate
+        ytd_with_this = ytd_ss + gross  # approximate for additional Medicare
         if ytd_with_this > ADDITIONAL_MEDICARE_THRESHOLD:
             extra = min(gross, ytd_with_this - ADDITIONAL_MEDICARE_THRESHOLD)
             medicare_tax += (extra * ADDITIONAL_MEDICARE_RATE).quantize(PRECISION, rounding=ROUND_HALF_UP)
